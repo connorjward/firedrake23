@@ -1,0 +1,3 @@
+digraph interval_mesh_layout {
+	"()" [label=<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'><TR><TD PORT='x0' BGCOLOR='#0066ff'>1</TD><TD PORT='x1' BGCOLOR='#ff6666'>1</TD><TD PORT='x2' BGCOLOR='#ff6666'>0</TD><TD PORT='x3' BGCOLOR='#0066ff'>0</TD><TD PORT='x4' BGCOLOR='#ff6666'>3</TD><TD PORT='x5' BGCOLOR='#0066ff'>2</TD><TD PORT='x6' BGCOLOR='#ff6666'>2</TD></TR></TABLE>> shape=plaintext]
+}

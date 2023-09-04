@@ -1,0 +1,29 @@
+% tikz code for drawing the following interval mesh:
+% x---x---x---x
+% 2 3 1 0 6 5 4
+
+% define points
+\tkzDefPoint(0,0){v0}
+\tkzDefShiftPoint[v0](1,0){v1}
+\tkzDefShiftPoint[v1](1,0){v2}
+\tkzDefShiftPoint[v2](1,0){v3}
+
+% define cells
+\tkzDefBarycentricPoint(v0=1,v1=1) \tkzGetPoint{c0}
+\tkzDefBarycentricPoint(v1=1,v2=1) \tkzGetPoint{c1}
+\tkzDefBarycentricPoint(v2=1,v3=1) \tkzGetPoint{c2}
+
+% draw cells
+\tkzDrawSegments(v0,v1 v1,v2 v2,v3)
+
+% draw vertices
+\tkzDrawPoints(v0,v1,v2,v3)
+
+% add labels (with appropriate numbering)
+\tkzLabelPoint[above](v0){$2$}
+\tkzLabelPoint[above](v1){$1$}
+\tkzLabelPoint[above](v2){$6$}
+\tkzLabelPoint[above](v3){$4$}
+\tkzLabelPoint[below](c0){$3$}
+\tkzLabelPoint[below](c1){$0$}
+\tkzLabelPoint[below](c2){$5$}

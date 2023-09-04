@@ -1,0 +1,272 @@
+\documentclass[aspectratio=169]{beamer}
+
+% packages
+\usepackage{graphicx}
+  \graphicspath{{figures}}
+\usepackage{minted}
+\usepackage{amssymb}
+\usepackage{tcolorbox}
+\usepackage{xcolor}
+
+% subfig support
+\usepackage{caption}
+\usepackage{subcaption}
+
+% packages
+\usepackage{biblatex}
+  \addbibresource{bibliography.bib}
+\usepackage[acronym,nomain]{glossaries}
+  \setacronymstyle{long-short}
+  \newacronym[shortplural={DoFs},longplural={degrees-of-freedom}]
+    {dof}{DoF}{degree-of-freedom}
+  \newacronym{fem}{FEM}{the finite element method}
+  \newacronym{pde}{PDE}{partial differential equation}
+  \newacronym[shortplural={FLOPs},longplural={floating-point operations}]
+    {flop}{FLOP}{floating-point operation}
+  \newacronym{dag}{DAG}{directed acyclic graph}
+  \newacronym{dg}{DG}{discontinous Galerkin}
+  \newacronym{poset}{poset}{partially-ordered set}
+  \newacronym{rcm}{RCM}{reverse Cuthill-McKee}
+  \newacronym{dsl}{DSL}{domain-specific language}
+  \newacronym{jit}{JIT}{just-in-time}
+  \newacronym{ufl}{UFL}{the Unified Form Language}
+  \newacronym{tsfc}{TSFC}{the Two-Stage Form Compiler}
+\usepackage{graphicx}
+  \graphicspath{{figures}}
+\usepackage{todonotes}
+\usepackage{hyperref}
+\usepackage{subcaption}
+\usepackage{amsmath}
+% source: https://tex.stackexchange.com/questions/650034/mathbb-font-for-lowercase-letters
+\usepackage[bb=libus]{mathalpha}
+\usepackage{pgf}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{tkz-euclide}
+  % \usetikzlibrary{arrows,calc,graphs,graphdrawing,positioning,tikzmark,shapes.geometric,patterns.meta,decorations.pathreplacing,decorations.marking}
+  \usetikzlibrary{arrows,calc,graphs,graphdrawing,positioning,tikzmark,shapes.geometric,patterns.meta,decorations.pathreplacing}
+  \usegdlibrary{trees}
+  \pgfdeclarelayer{background}
+  \pgfsetlayers{background,main}
+  \tikzstyle{ptlabel} = [anchor=center, color=black, opacity=1]
+  \tikzset{font={\small}}
+  \tikzset{label style/.append style={font=\small}}
+  % source: https://tex.stackexchange.com/questions/356564/macro-for-rounded-polygon-around-some-nodes
+  \def\drawpolygon#1,#2;{
+    \begin{pgfonlayer}{background}
+        \filldraw[line width=28,join=round](#1.center)foreach\A in{#2}{--(\A.center)}--cycle;
+        \filldraw[line width=27,join=round,blue!10](#1.center)foreach\A in{#2}{--(\A.center)}--cycle;
+    \end{pgfonlayer}
+  }
+
+% theme info
+\usetheme{firedrake}
+
+% title info
+\title{Latest developments in \texttt{pyop3}}
+\author{Connor Ward}
+\date{13 September 2023}
+
+% macros
+
+% checkbox
+% source https://tex.stackexchange.com/questions/16000/creating-boxed-check-mark
+\newcommand{\unchecked}{\makebox[0pt][l]{$\square$}\raisebox{.15ex}{\hspace{0.1em}$\quad$}}
+\newcommand{\maybe}{\makebox[0pt][l]{$\square$}\raisebox{.15ex}{\hspace{0.1em}$\lozenge$}}
+\newcommand{\checked}{\makebox[0pt][l]{$\square$}\raisebox{.15ex}{\hspace{0.1em}$\checkmark$}}
+
+% hacky way to get \pyop2 and \pyop3 as valid macros
+% source: https://tex.stackexchange.com/questions/13290/how-to-define-macros-with-numbers-in-them
+\def\pyop#1{\ifnum#1=2 {PyOP2}\else \ifnum#1=3 {\texttt{pyop3}}\fi \fi}
+
+\newcommand{\py}{\mintinline{python}}
+\newcommand{\clang}{\mintinline{c}}
+\newcommand{\closure}{\mathbb{cl}}
+\newcommand{\support}{\mathbb{supp}}
+\newcommand{\plexstar}{\mathbb{st}}
+\newcommand{\cone}{\mathbb{cone}}
+
+\newcommand{\hdiv}{$H(\mathrm{div})$ }
+\newcommand{\hcurl}{$H(\mathrm{curl})$ }
+
+\tikzstyle{plexstencil} = [draw=none,fill=blue!30,fill opacity=.4]
+
+\newcommand{\codebgcolor}{black!10}
+
+\newcommand{\myred}[1]{\textcolor{red}{\textbf{#1}}}
+
+% set default parameters for tcolorbox
+\tcbset{
+  left=2mm
+}
+
+% set default minted parameters
+\setminted{fontsize=\footnotesize}
+
+% =============================================================================
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}{Overview}
+  \tableofcontents
+\end{frame}
+
+\section{What is \pyop3?}
+
+\begin{frame}{TL;DR}
+  \begin{itemize}
+    \item A programming language for mathematicians
+    \item Comes with a compiler
+    \item The language lets you express how to read and write from complicated data structures
+  \end{itemize}
+
+  \vfill
+\end{frame}
+
+\begin{frame}{In more detail}
+  \begin{itemize}
+    \item A \myred{domain-specific} programming language for mathematicians \myred{embedded in Python}
+    \item Comes with a \myred{just-in-time} compiler \myred{that targets loopy and then C/CUDA/OpenCL}
+    \item The language lets you express how to read and write from complicated data structures
+    \item \myred{Never need to create a \texttt{PetscSection} ever again!}
+  \end{itemize}
+
+  \vfill
+\end{frame}
+
+\begin{frame}{Why is this hard?}
+  \begin{itemize}
+    \item FEM codes have diverse and complicated data structures
+    \item These data structures also need to be accessed in non-trivial ways
+  \end{itemize}
+\end{frame}
+
+\section{A simple-ish example}
+
+\begin{frame}[fragile]{Creating a data layout for a mesh}
+  \noindent
+  \begin{minipage}{.4\textwidth}
+    \begin{tikzpicture}[scale=.9]
+      \input{two_cell_mesh_renumbered.tikz}
+    \end{tikzpicture}
+  \end{minipage}%
+  \begin{minipage}{.55\textwidth}
+    \begin{tcolorbox}
+      \begin{minted}[fontsize=\tiny]{python}
+mesh_axis = Axis(
+  [
+    AxisComponent(2, "cells"),
+    AxisComponent(5, "edges"),
+    AxisComponent(4, "verts"),
+  ],
+  "mesh"
+  permutation=[3, 7, 0, 10, 5, 9, 2, 1, 6, 4, 8],
+)
+      \end{minted}
+    \end{tcolorbox}
+  \end{minipage}
+
+  \pause
+  \vspace{-2em}
+
+  \begin{center}
+    \includegraphics{scripts/two_cell_mesh.gv.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Now make it P3}
+  \noindent
+  \begin{minipage}{.4\textwidth}
+    \begin{tikzpicture}[scale=1.5]
+      \input{lagrange3.tikz}
+    \end{tikzpicture}
+  \end{minipage}%
+  \begin{minipage}{.55\textwidth}
+    \begin{tcolorbox}
+      \begin{minted}[fontsize=\tiny]{python}
+axes = (
+  AxisTree(mesh_axis)
+    .add_subaxis(Axis(1), mesh_axis.id, "cells")
+    .add_subaxis(Axis(2), mesh_axis.id, "edges")
+    .add_subaxis(Axis(1), mesh_axis.id, "verts")
+)
+      \end{minted}
+    \end{tcolorbox}
+  \end{minipage}
+
+  \pause
+  \vspace{-2em}
+
+  \begin{center}
+    \includegraphics[width=\textwidth]{scripts/two_cell_P3_layout.gv.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}{A typical non-trivial data access pattern: residual assembly}
+  \begin{tikzpicture}
+    \input{stencil_computation.tikz}
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]{Residual assembly in \pyop3}
+  \begin{tcolorbox}
+    \begin{minted}{text}
+for every cell in the mesh:
+  collect DoFs found in the cell's closure
+  call a local kernel with these DoFs
+  scatter the result to a global vector
+    \end{minted}
+  \end{tcolorbox}
+
+  \pause
+
+  \begin{tcolorbox}
+    \begin{minted}{python}
+loop(
+  c := mesh.cells.index(),
+  kernel(func0[closure(c)], ...)
+)
+    \end{minted}
+  \end{tcolorbox}
+\end{frame}
+
+\begin{frame}[fragile]{Code generation!}
+  \begin{tcolorbox}
+    \begin{minted}[fontsize=\tiny]{c}
+void my_loop(double *func0, int *map0, int *map1, int *layout0, int *layout1, int *layout2, ...) {
+  // to store the "packed" data
+  double t_0[10];
+  // loop over cells
+  for (int32_t i_0 = 0; i_0 < 2; ++i_0) {
+    // pack cell DoFs
+    t_0[0] = func0[layout0[i_0]];
+    // pack edge DoFs
+    for (int32_t i_5 = 0; i_5 < 3; ++i_5) {  // loop over edges
+      for (int32_t i_6 = 0; i_6 < 2; ++i_6) {  // loop over edge DoFs
+        j_3 = map0[i_0 * 3 + i_5];  // select the right edge
+        t_0[i_5*2 + i_6 + 1] = func0[layout1[j_3] + i_6];  // pack DoF
+      }
+    }
+    // pack vertex DoFs
+    for (int32_t i_7 = 0; i_7 < 3; ++i_7) {  // loop over vertices
+      j_5 = map1[i_0 * 3 + i_7];  // select the right vertex
+      t_0[i_7 + 7] = func0[layout2[j_5]];  // pack DoF
+    }
+    // execute the local kernel
+    kernel(t_0, ...);
+    // now unpack the result in the same way
+  }
+}
+    \end{minted}
+  \end{tcolorbox}
+\end{frame}
+
+% TODO:
+% * Now I've explained how it works I should demonstrate cooler bits
+% * Ragged/particle data layouts, p-adaptivity?
+% * Loop/map composition
+% * Should emphasise composability of data layouts and loop expressions!!!
+
+\end{document}

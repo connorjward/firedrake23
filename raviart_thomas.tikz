@@ -1,0 +1,68 @@
+\tkzSetUpStyle[postaction=decorate,decoration={markings,mark=at position .78 with {\arrow[very thick]{stealth}},mark=at position .28 with {\arrow[very thick]{stealth}}}]{myarrow}
+
+\newcommand{\defnodes}{
+  \tkzDefPoint(0,0){v0}
+  \tkzDefShiftPoint[v0](0:2.5){v1}
+  \tkzDefShiftPoint[v0](90:2.5){v2}
+}
+
+\tikzstyle {cellcolor} = [fill=yellow!80];
+\tikzstyle {edgecolor} = [fill=red!60];
+\tikzstyle {vertcolor} = [fill=blue!30];
+\tikzstyle {segment} = [line width=1.2pt];
+\tikzstyle {dof} = [draw=black,line width=1.2pt];
+\tikzstyle {celldof} = [dof,cellcolor];
+\tikzstyle {edgedof} = [dof,edgecolor];
+\tikzstyle {vertdof} = [dof,vertcolor];
+\tikzstyle {doftext} = [font=\bf];
+\tikzstyle {vdof} = [-stealth,draw=red!60,line width=1.9];
+
+% original element
+\begin{scope}
+  \defnodes
+  \tkzDrawSegment[myarrow,segment](v0,v1)
+  \tkzDrawSegment[myarrow,segment](v1,v2)
+  \tkzDrawSegment[myarrow,segment](v0,v2)
+
+  \tkzDefBarycentricPoint(v0=1,v1=1) \tkzGetPoint{e0d0}
+  \tkzDefShiftPoint[e0d0](-90:.8){e0d0v}
+  \draw [vdof] (e0d0) -- (e0d0v);
+  \filldraw [edgedof] (e0d0) node [doftext] {2} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v0=1,v2=1) \tkzGetPoint{e1d0}
+  \tkzDefShiftPoint[e1d0](180:.8){e1d0v}
+  \draw [vdof] (e1d0) -- (e1d0v);
+  \filldraw [edgedof] (e1d0) node [doftext] {1} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v1=1,v2=1) \tkzGetPoint{e2d0}
+  \tkzDefShiftPoint[e2d0](225:.8){e2d0v}
+  \draw [vdof] (e2d0) -- (e2d0v);
+  \filldraw [edgedof] (e2d0) node [doftext] {0} circle [radius=7pt];
+
+  \node at (1,-1) {expected};
+\end{scope}
+
+% now flipped
+\begin{scope}[xshift=5cm]
+  \defnodes
+  \tkzDrawSegment[myarrow,segment](v0,v1)
+  \tkzDrawSegment[myarrow,segment](v2,v1)
+  \tkzDrawSegment[myarrow,segment](v0,v2)
+
+  \tkzDefBarycentricPoint(v0=1,v1=1) \tkzGetPoint{e0d0}
+  \tkzDefShiftPoint[e0d0](-90:.8){e0d0v}
+  \draw [vdof] (e0d0) -- (e0d0v);
+  \filldraw [edgedof] (e0d0) node [doftext] {2} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v0=1,v2=1) \tkzGetPoint{e1d0}
+  \tkzDefShiftPoint[e1d0](180:.8){e1d0v}
+  \draw [vdof] (e1d0) -- (e1d0v);
+  \filldraw [edgedof] (e1d0) node [doftext] {1} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v1=1,v2=1) \tkzGetPoint{e2d0}
+  \tkzDefShiftPoint[e2d0](45:.8){e2d0v}
+  \draw [vdof] (e2d0) -- (e2d0v);
+  \filldraw [edgedof] (e2d0) node [doftext] {0} circle [radius=7pt];
+
+  \node at (1,-1) {given};
+\end{scope}

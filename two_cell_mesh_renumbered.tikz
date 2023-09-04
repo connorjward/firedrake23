@@ -1,0 +1,23 @@
+\tkzDefPoint(0,2){v0}
+\tkzDefPoint(2,4){v1}
+\tkzDefPoint(2,0){v2}
+\tkzDefPoint(4,2){v3}
+
+\tkzDrawSegments(v0,v1 v0,v2 v1,v2 v1,v3 v2,v3)
+\tkzDrawPoints(v0,v1,v2,v3)
+
+\tkzDefBarycentricPoint(v0=1.2,v1=1,v2=1) \tkzGetPoint{c0}
+\tkzLabelPoint[centered,xshift=-.1cm](c0){3}
+\tkzDefBarycentricPoint(v1=1,v2=1,v3=1.2) \tkzGetPoint{c1}
+\tkzLabelPoint[centered,xshift=.1cm](c1){7}
+
+\tkzLabelPoint[left](v0){1}
+\tkzLabelPoint[above](v1){6}
+\tkzLabelPoint[below](v2){4}
+\tkzLabelPoint[right](v3){8}
+
+\tkzLabelSegment[below left](v0,v2){0}
+\tkzLabelSegment[above left](v0,v1){10}
+\tkzLabelSegment[left,xshift=.1cm](v1,v2){5}
+\tkzLabelSegment[above right](v1,v3){9}
+\tkzLabelSegment[below right](v2,v3){2}

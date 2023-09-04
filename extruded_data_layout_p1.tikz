@@ -1,0 +1,84 @@
+\tkzDefPoint(0,0){v0v0}
+\tkzDefShiftPoint[v0v0](2,0){v1v0}
+\tkzDefShiftPoint[v1v0](2,0){v2v0}
+\tkzDefShiftPoint[v0v0](0,2){v0v1}
+\tkzDefShiftPoint[v1v0](0,2){v1v1}
+\tkzDefShiftPoint[v2v0](0,2){v2v1}
+\tkzDefShiftPoint[v0v1](0,2){v0v2}
+\tkzDefShiftPoint[v1v1](0,2){v1v2}
+\tkzDefShiftPoint[v2v1](0,2){v2v2}
+\tkzDefShiftPoint[v0v2](0,2){v0v3}
+\tkzDefShiftPoint[v1v2](0,2){v1v3}
+
+% horiz edges
+\tkzDrawSegments(v0v0,v1v0 v1v0,v2v0)
+\tkzDrawSegments(v0v1,v1v1 v1v1,v2v1)
+\tkzDrawSegments(v0v2,v1v2 v1v2,v2v2)
+\tkzDrawSegments(v0v3,v1v3)
+
+% vert edges
+\tkzDrawSegments(v0v0,v0v1 v0v1,v0v2 v0v2,v0v3)
+\tkzDrawSegments(v1v0,v1v1 v1v1,v1v2 v1v2,v1v3)
+\tkzDrawSegments(v2v0,v2v1 v2v1,v2v2)
+
+% verts
+\tkzDrawPoints(v0v0,v0v1,v0v2,v0v3)
+\tkzDrawPoints(v1v0,v1v1,v1v2,v1v3)
+\tkzDrawPoints(v2v0,v2v1,v2v2)
+
+% add labels
+
+% lhs
+\tkzDefBarycentricPoint(v0v0=1,v0v1=1) \tkzGetPoint{v0e0}
+\tkzDefBarycentricPoint(v0v1=1,v0v2=1) \tkzGetPoint{v0e1}
+\tkzDefBarycentricPoint(v0v2=1,v0v3=1) \tkzGetPoint{v0e2}
+
+\node [xshift=-1.2cm] (v0v0label) at (v0v0) {$(v_0,v_0)$};
+\node [xshift=-1.2cm] (v0v1label) at (v0v1) {$(v_0,v_1)$};
+\node [xshift=-1.2cm] (v0v2label) at (v0v2) {$(v_0,v_2)$};
+\node [xshift=-1.2cm] (v0v3label) at (v0v3) {$(v_0,v_3)$};
+
+\node [xshift=-1.2cm] (v0e0label) at (v0e0) {$(v_0,e_0)$};
+\node [xshift=-1.2cm] (v0e1label) at (v0e1) {$(v_0,e_1)$};
+\node [xshift=-1.2cm] (v0e2label) at (v0e2) {$(v_0,e_2)$};
+
+\draw [-{stealth},shorten >=2pt] (v0v0label) -- (v0v0);
+\draw [-{stealth},shorten >=2pt] (v0v1label) -- (v0v1);
+\draw [-{stealth},shorten >=2pt] (v0v2label) -- (v0v2);
+\draw [-{stealth},shorten >=2pt] (v0v3label) -- (v0v3);
+
+\draw [-{stealth},shorten >=2pt] (v0e0label) -- (v0e0);
+\draw [-{stealth},shorten >=2pt] (v0e1label) -- (v0e1);
+\draw [-{stealth},shorten >=2pt] (v0e2label) -- (v0e2);
+
+% rhs
+\tkzDefBarycentricPoint(v1v0=1,v2v0=1) \tkzGetPoint{e1e0}
+\tkzDefBarycentricPoint(v1v1=1,v2v1=1) \tkzGetPoint{e1e1}
+\tkzDefBarycentricPoint(v1v2=1,v2v2=1) \tkzGetPoint{e1e2}
+
+\tkzDefBarycentricPoint(v1v0=1,v1v1=1,v2v0=1,v2v1=1) \tkzGetPoint{e1c0}
+\tkzDefBarycentricPoint(v1v1=1,v1v2=1,v2v1=1,v2v2=1) \tkzGetPoint{e1c1}
+
+\node [xshift=1.9cm,yshift=.5cm] (e1e0label) at (e1e0) {$(e_1,e_0)$};
+\node [xshift=1.9cm,yshift=.5cm] (e1e1label) at (e1e1) {$(e_1,e_1)$};
+\node [xshift=1.9cm,yshift=.5cm] (e1e2label) at (e1e2) {$(e_1,e_2)$};
+
+\node [xshift=1.9cm,yshift=.5cm] (e1c0label) at (e1c0) {$(e_1,c_0)$};
+\node [xshift=1.9cm,yshift=.5cm] (e1c1label) at (e1c1) {$(e_1,c_1)$};
+
+\draw [-{stealth},shorten >=2pt] (e1e0label.west) -- (e1e0);
+\draw [-{stealth},shorten >=2pt] (e1e1label.west) -- (e1e1);
+\draw [-{stealth},shorten >=2pt] (e1e2label.west) -- (e1e2);
+
+\draw [-{stealth},shorten >=2pt] (e1c0label.west) -- (e1c0);
+\draw [-{stealth},shorten >=2pt] (e1c1label.west) -- (e1c1);
+
+% bottom labels need to be included in bounding box
+\tkzDefBarycentricPoint(v0v0=1,v1v0=1) \tkzGetPoint{e0}
+\tkzLabelPoint[below](e0){$e_5$}
+\tkzDefBarycentricPoint(v1v0=1,v2v0=1) \tkzGetPoint{e1}
+\tkzLabelPoint[below](e1){$e_1$}
+
+\tkzLabelPoint[below](v0v0){$v_0$}
+\tkzLabelPoint[below](v1v0){$v_3$}
+\tkzLabelPoint[below](v2v0){$v_8$}

@@ -1,0 +1,24 @@
+\tkzDefPoint(0,0){v0}
+\tkzDefPoint(3,0){v1}
+
+\newcommand{\celldofcolor}{blue!50}
+\newcommand{\vertdofcolor}{red!60}
+
+\tikzstyle {cellcolor} = [fill=\celldofcolor];
+\tikzstyle {vertcolor} = [fill=\vertdofcolor];
+\tikzstyle {segment} = [line width=1.2pt];
+\tikzstyle {dof} = [draw=black,line width=1.2pt];
+\tikzstyle {celldof} = [dof,cellcolor];
+\tikzstyle {vertdof} = [dof,vertcolor];
+\tikzstyle {doftext} = [font=\bf];
+
+\tkzDrawSegment[segment](v0,v1)
+
+\filldraw [vertdof] (v0) node [doftext] {0} circle [radius=7pt];
+\filldraw [vertdof] (v1) node [doftext] {1} circle [radius=7pt];
+
+% cell dofs
+\tkzDefBarycentricPoint(v0=1.8,v1=1) \tkzGetPoint{c0d0}
+\tkzDefBarycentricPoint(v0=1,v1=1.8) \tkzGetPoint{c0d1}
+\filldraw [celldof] (c0d0) node [doftext] {2} circle [radius=7pt];
+\filldraw [celldof] (c0d1) node [doftext] {3} circle [radius=7pt];

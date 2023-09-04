@@ -1,0 +1,38 @@
+\begin{scope}[auto,every node/.style={circle,minimum size=20pt,draw,color=black,fill=white}]
+  \begin{scope}[yshift=0cm]
+    \node (1) [xshift={1*\textwidth/3}] {1};
+    \node (2) [xshift={2*\textwidth/3}] {2};
+  \end{scope}
+
+  \begin{scope}[yshift=2cm]
+    \node (7) [xshift={1*\textwidth/6}] {7};
+    \node (8) [xshift={2*\textwidth/6}] {8};
+    \node (9) [xshift={3*\textwidth/6}] {9};
+    \node (10) [xshift={4*\textwidth/6}] {10};
+    \node (11) [xshift={5*\textwidth/6}] {11};
+  \end{scope}
+
+  \begin{scope}[yshift=4cm]
+    \node (3) [xshift={1*\textwidth/5}] {3};
+    \node (4) [xshift={2*\textwidth/5}] {4};
+    \node (5) [xshift={3*\textwidth/5}] {5};
+    \node (6) [xshift={4*\textwidth/5}] {6};
+  \end{scope}
+
+  \draw [-Stealth] (1) -- (7);
+  \draw [-Stealth] (1) -- (8);
+  \draw [-Stealth] (1) -- (9);
+  \draw [-Stealth] (2) -- (9);
+  \draw [-Stealth] (2) -- (10);
+  \draw [-Stealth] (2) -- (11);
+  \draw [-Stealth] (7) -- (3);
+  \draw [-Stealth] (7) -- (5);
+  \draw [-Stealth] (8) -- (3);
+  \draw [-Stealth] (8) -- (4);
+  \draw [-Stealth] (9) -- (4);
+  \draw [-Stealth] (9) -- (5);
+  \draw [-Stealth] (10) -- (4);
+  \draw [-Stealth] (10) -- (6);
+  \draw [-Stealth] (11) -- (5);
+  \draw [-Stealth] (11) -- (6);
+\end{scope}

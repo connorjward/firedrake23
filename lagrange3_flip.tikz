@@ -1,0 +1,95 @@
+\tkzSetUpStyle[postaction=decorate,decoration={markings,mark=at position .52 with {\arrow[very thick]{stealth}}}]{myarrow}
+
+\newcommand{\defnodes}{
+  \tkzDefPoint(0,0){v0}
+  \tkzDefShiftPoint[v0](0:2.5){v1}
+  \tkzDefShiftPoint[v0](90:2.5){v2}
+}
+
+\newcommand{\celldofcolor}{blue!50}
+\newcommand{\edgedofcolor}{red!60}
+\newcommand{\vertdofcolor}{green!80}
+
+\tikzstyle {cellcolor} = [fill=\celldofcolor];
+\tikzstyle {edgecolor} = [fill=\edgedofcolor];
+\tikzstyle {vertcolor} = [fill=\vertdofcolor];
+\tikzstyle {segment} = [line width=1.2pt];
+\tikzstyle {dof} = [draw=black,line width=1.2pt];
+\tikzstyle {celldof} = [dof,cellcolor];
+\tikzstyle {edgedof} = [dof,edgecolor];
+\tikzstyle {vertdof} = [dof,vertcolor];
+\tikzstyle {doftext} = [font=\bf];
+\tikzstyle {vdof} = [-stealth,draw=red!60,line width=1.9];
+
+\begin{scope}
+  \defnodes
+  \tkzDrawSegment[myarrow,segment](v0,v1)
+  \tkzDrawSegment[myarrow,segment](v1,v2)
+  \tkzDrawSegment[myarrow,segment](v0,v2)
+
+  \filldraw [vertdof] (v0) node [doftext] {0} circle [radius=7pt];
+  \filldraw [vertdof] (v1) node [doftext] {1} circle [radius=7pt];
+  \filldraw [vertdof] (v2) node [doftext] {2} circle [radius=7pt];
+
+  % edge dofs
+  \tkzDefBarycentricPoint(v0=2.3,v1=1) \tkzGetPoint{e0d0}
+  \filldraw [edgedof] (e0d0) node [doftext] {7} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v0=1,v1=2.3) \tkzGetPoint{e0d1}
+  \filldraw [edgedof] (e0d1) node [doftext] {8} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v1=2.3,v2=1) \tkzGetPoint{e1d0}
+  \filldraw [edgedof] (e1d0) node [doftext] {3} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v1=1,v2=2.3) \tkzGetPoint{e1d1}
+  \filldraw [edgedof] (e1d1) node [doftext] {4} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v0=2.3,v2=1) \tkzGetPoint{e2d0}
+  \filldraw [edgedof] (e2d0) node [doftext] {5} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v0=1,v2=2.3) \tkzGetPoint{e2d1}
+  \filldraw [edgedof] (e2d1) node [doftext] {6} circle [radius=7pt];
+
+  % cell dof
+  \tkzDefBarycentricPoint(v0=1,v1=1,v2=1) \tkzGetPoint{c0d0}
+  \filldraw [celldof] (c0d0) node [doftext] {9} circle [radius=7pt];
+
+  \node at (1,-1) {expected};
+\end{scope}
+
+% now flipped
+\begin{scope}[xshift=5cm]
+  \defnodes
+  \tkzDrawSegment[myarrow,segment](v0,v1)
+  \tkzDrawSegment[myarrow,segment](v2,v1)
+  \tkzDrawSegment[myarrow,segment](v0,v2)
+
+  \filldraw [vertdof] (v0) node [doftext] {0} circle [radius=7pt];
+  \filldraw [vertdof] (v1) node [doftext] {1} circle [radius=7pt];
+  \filldraw [vertdof] (v2) node [doftext] {2} circle [radius=7pt];
+
+  % edge dofs
+  \tkzDefBarycentricPoint(v0=2.3,v1=1) \tkzGetPoint{e0d0}
+  \filldraw [edgedof] (e0d0) node [doftext] {7} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v0=1,v1=2.3) \tkzGetPoint{e0d1}
+  \filldraw [edgedof] (e0d1) node [doftext] {8} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v1=2.3,v2=1) \tkzGetPoint{e1d0}
+  \filldraw [edgedof] (e1d0) node [doftext] {4} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v1=1,v2=2.3) \tkzGetPoint{e1d1}
+  \filldraw [edgedof] (e1d1) node [doftext] {3} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v0=2.3,v2=1) \tkzGetPoint{e2d0}
+  \filldraw [edgedof] (e2d0) node [doftext] {5} circle [radius=7pt];
+
+  \tkzDefBarycentricPoint(v0=1,v2=2.3) \tkzGetPoint{e2d1}
+  \filldraw [edgedof] (e2d1) node [doftext] {6} circle [radius=7pt];
+
+  % cell dof
+  \tkzDefBarycentricPoint(v0=1,v1=1,v2=1) \tkzGetPoint{c0d0}
+  \filldraw [celldof] (c0d0) node [doftext] {9} circle [radius=7pt];
+
+  \node at (1,-1) {given};
+\end{scope}
