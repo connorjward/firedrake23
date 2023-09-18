@@ -8,6 +8,9 @@
 \usepackage{tcolorbox}
 \usepackage{xcolor}
 
+% strikeout
+\usepackage{ulem}
+
 % subfig support
 \usepackage{caption}
 \usepackage{subcaption}
@@ -92,6 +95,11 @@
 \tikzstyle{plexstencil} = [draw=none,fill=blue!30,fill opacity=.4]
 
 \newcommand{\codebgcolor}{black!10}
+\newcommand{\mixedstylesetup}{%
+  \tikzstyle{v0} = [fill=blue!50];
+  \tikzstyle{v1} = [fill=red!65];
+}
+
 
 \newcommand{\myred}[1]{\textcolor{red}{\textbf{#1}}}
 
@@ -127,7 +135,7 @@
 
 \begin{frame}{In more detail}
   \begin{itemize}
-    \item A \myred{domain-specific} programming language for mathematicians \myred{embedded in Python}
+    \item A \myred{domain-specific} programming language for mathematicians \myred{embedded in Python (like UFL)}
     \item Comes with a \myred{just-in-time} compiler \myred{that targets loopy and then C/CUDA/OpenCL}
     \item The language lets you express how to read and write from complicated data structures
     \item \myred{Never need to create a \texttt{PetscSection} ever again!}
@@ -145,7 +153,14 @@
 
 \section{A simple-ish example}
 
-\begin{frame}[fragile]{Creating a data layout for a mesh}
+\begin{frame}{Outline of a \pyop3 program}
+  \begin{enumerate}
+    \item Create data structures
+    \item Execute loop expressions acting on the data structures
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Create a data layout for a 2 cell mesh}
   \noindent
   \begin{minipage}{.4\textwidth}
     \begin{tikzpicture}[scale=.9]
@@ -176,7 +191,7 @@ mesh_axis = Axis(
   \end{center}
 \end{frame}
 
-\begin{frame}[fragile]{Now make it P3}
+\begin{frame}[fragile]{Now make it a P3 function space}
   \noindent
   \begin{minipage}{.4\textwidth}
     \begin{tikzpicture}[scale=1.5]
@@ -204,7 +219,7 @@ axes = (
   \end{center}
 \end{frame}
 
-\begin{frame}{A typical non-trivial data access pattern: residual assembly}
+\begin{frame}{Now let's do a loop}
   \begin{tikzpicture}
     \input{stencil_computation.tikz}
   \end{tikzpicture}
@@ -233,40 +248,276 @@ loop(
 \end{frame}
 
 \begin{frame}[fragile]{Code generation!}
+  \vspace{-1em}
+
   \begin{tcolorbox}
     \begin{minted}[fontsize=\tiny]{c}
 void my_loop(double *func0, int *map0, int *map1, int *layout0, int *layout1, int *layout2, ...) {
-  // to store the "packed" data
-  double t_0[10];
-  // loop over cells
-  for (int32_t i_0 = 0; i_0 < 2; ++i_0) {
+  double t_0[10];  // to store the "packed" data
+
+  for (int32_t i_0 = 0; i_0 < 2; ++i_0) {                   // loop over cells
     // pack cell DoFs
     t_0[0] = func0[layout0[i_0]];
+
     // pack edge DoFs
-    for (int32_t i_5 = 0; i_5 < 3; ++i_5) {  // loop over edges
-      for (int32_t i_6 = 0; i_6 < 2; ++i_6) {  // loop over edge DoFs
-        j_3 = map0[i_0 * 3 + i_5];  // select the right edge
-        t_0[i_5*2 + i_6 + 1] = func0[layout1[j_3] + i_6];  // pack DoF
+    for (int32_t i_5 = 0; i_5 < 3; ++i_5) {                 // loop over edges
+      for (int32_t i_6 = 0; i_6 < 2; ++i_6) {               // loop over edge DoFs
+        j_3 = map0[i_0 * 3 + i_5];                          // select the right edge
+        t_0[i_5*2 + i_6 + 1] = func0[layout1[j_3] + i_6];   // pack DoF
       }
     }
+
     // pack vertex DoFs
-    for (int32_t i_7 = 0; i_7 < 3; ++i_7) {  // loop over vertices
-      j_5 = map1[i_0 * 3 + i_7];  // select the right vertex
-      t_0[i_7 + 7] = func0[layout2[j_5]];  // pack DoF
+    for (int32_t i_7 = 0; i_7 < 3; ++i_7) {                 // loop over vertices
+      j_5 = map1[i_0 * 3 + i_7];                            // select the right vertex
+      t_0[i_7 + 7] = func0[layout2[j_5]];                   // pack DoF
     }
-    // execute the local kernel
+
+    // execute the local kernel and unpack the result
     kernel(t_0, ...);
-    // now unpack the result in the same way
+    ...
   }
 }
     \end{minted}
   \end{tcolorbox}
 \end{frame}
 
-% TODO:
-% * Now I've explained how it works I should demonstrate cooler bits
-% * Ragged/particle data layouts, p-adaptivity?
-% * Loop/map composition
-% * Should emphasise composability of data layouts and loop expressions!!!
+\section{What's the point?}
+
+\begin{frame}{But \pyop2 can already do this, why do we need \pyop3?}
+  Is it faster than \pyop2? \\
+  \pause
+  \myred{No!} \\
+  \pause
+  Is it as fast as \pyop2? \\
+  \pause
+  \myred{Not yet!} \\
+  \pause
+  So why is it useful? \\
+  \pause
+  \only<6>{\myred{It's not.}}
+  \uncover<7->{\sout{\myred{It's not.}}}
+
+  \begin{center}
+    \uncover<8->{\myred{Composability!}}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Why is composability important?}
+  \begin{itemize}
+    \item Performance optimisation is not the main priority, expressibility is
+    \item \pyop2 has limitations:
+      \begin{itemize}
+        \item Single loop
+        \item Single kernel
+        \item No map composition
+        \item Extruded meshes require invasive code changes
+      \end{itemize}
+    \item Can do more in fewer lines of code
+      \begin{itemize}
+        \item \pyop3 compiler is $\sim1000$ lines of code, \pyop2's is $\sim2500$
+        \item No special casing for extruded
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Map composition}
+  \begin{itemize}
+    \item Interior facet integrals: 
+      \begin{tcolorbox}
+        \begin{minted}[fontsize=\scriptsize]{python}
+loop(facet := mesh.interior_facets, kernel(func0[closure(support(facet))]))
+        \end{minted}
+      \end{tcolorbox}
+
+    \item Multigrid:
+      \begin{tcolorbox}
+        \begin{minted}[fontsize=\footnotesize]{python}
+closure(fine2coarse(fine_cell))
+        \end{minted}
+      \end{tcolorbox}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Loop and kernel composition: PCPATCH}
+  \begin{tcolorbox}
+    \begin{minted}{python}
+loop(v := mesh.vertices.index, [
+  loop(c := star(v).index, [
+    kernel1(dat1[closure(c)], "mat"),
+    kernel2(dat2[closure(c)], "vec")
+  ]),
+  solve("mat", "vec", dat3[v])
+])
+    \end{minted}
+  \end{tcolorbox}
+
+  \vspace{-1em}
+
+  \begin{itemize}
+    \item We could also try to rewrite SLATE
+    \item Loop composition can enable certain tiling optimisations
+  \end{itemize}
+\end{frame}
+
+\frame{\textbf{And this composability will work with LOADS of data structures...}}
+
+\begin{frame}{Example 1: extruded}
+  \noindent
+  \begin{minipage}{.2\textwidth}
+    \begin{tikzpicture}[scale=.6]
+      \input{regular_extruded.tikz}
+    \end{tikzpicture}
+  \end{minipage}%
+  \begin{minipage}{.8\textwidth}
+    \includegraphics[width=\textwidth]{scripts/extruded_layout.gv.pdf}
+  \end{minipage}
+\end{frame}
+
+\begin{frame}{Example 2: ragged}
+  \begin{center}
+    \includegraphics[width=\textwidth]{scripts/ragged_layout.gv.pdf}
+  \end{center}
+
+  \vspace{-2em}
+
+  Useful for variable-layer extrusion and PIC.
+\end{frame}
+
+\begin{frame}{Example 3: sparse}
+  \begin{itemize}
+    \item Like ragged (no picture sorry)
+    \item Arbitrary sparsity is completely possible
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Example 4: ``swapping" axes}
+  \begin{figure}
+    \centering
+    \begin{subfigure}{.65\textwidth}
+      \centering
+      \begin{tikzpicture}[y=-1cm,scale=.55]
+        \mixedstylesetup
+        \begin{scope}[xshift=3.25cm, yshift=0cm]
+          \filldraw[v0,draw=black] (0,0) rectangle (1,1);
+          \filldraw[v1,draw=black] (1,0) rectangle (2,1);
+          \node[at={(.5,.5)}, ptlabel] {$V_0$};
+          \node[at={(1.5,.5)}, ptlabel] {$V_1$};
+        \end{scope}
+  
+        \begin{scope}[yshift=-2cm]
+          \begin{scope}[xshift=0cm]
+            \fill[lightgray] (0,0) rectangle (4,1);
+            \filldraw[draw=black, fill=white] (0.5,0) rectangle (1.5,1);
+            \filldraw[draw=black, fill=white] (1.5,0) rectangle (2.5,1);
+            \filldraw[draw=black, fill=white] (2.5,0) rectangle (3.5,1);
+            \node[at={(1,.5)}, ptlabel] {$c_0$};
+            \node[at={(2,.5)}, ptlabel] {$v_1$};
+            \node[at={(3,.5)}, ptlabel] {$c_4$};
+            \draw (0,0) -- (4,0);
+            \draw (0,1) -- (4,1);
+          \end{scope}
+  
+          \begin{scope}[xshift=4.5cm]
+            \fill[lightgray] (0,0) rectangle (4,1);
+            \filldraw[draw=black, fill=white] (0.5,0) rectangle (1.5,1);
+            \filldraw[draw=black, fill=white] (1.5,0) rectangle (2.5,1);
+            \filldraw[draw=black, fill=white] (2.5,0) rectangle (3.5,1);
+            \node[at={(1,.5)}, ptlabel] {$c_0$};
+            \node[at={(2,.5)}, ptlabel] {$v_1$};
+            \node[at={(3,.5)}, ptlabel] {$c_4$};
+            \draw (0,0) -- (4,0);
+            \draw (0,1) -- (4,1);
+          \end{scope}
+        \end{scope}
+  
+        \draw [densely dashed] (3.25,1) -- (0,2);
+        \draw [densely dashed] (4.25,1) -- (4,2);
+        \draw [densely dashed] (4.25,1) -- ({0+4.5},2);
+        \draw [densely dashed] (5.25,1) -- ({4+4.5},2);
+  
+        \node [at={(9.5,.5)},anchor=center] {Spaces};
+        \node [at={(9.5,2.5)},anchor=center] {Points};
+      \end{tikzpicture}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{.3\textwidth}
+      \centering
+      \begin{tikzpicture}[x=.8cm,y=-1cm,scale=.7]
+        \mixedstylesetup
+        \draw (0,0) .. controls (-.2,0) and (-.2,3) .. (0,3);
+        \draw (1,0) .. controls (1.2,0) and (1.2,3) .. (1,3);
+        \filldraw [v0,rounded corners,draw=none]
+          (.1,.05) -- (.9,.05) -- (.9,1.45) -- (.1,1.45) -- cycle;
+        \filldraw [v1,rounded corners,draw=none]
+          (.1,1.55) -- (.9,1.55) -- (.9,2.95) -- (.1,2.95) -- cycle;
+      \end{tikzpicture}
+    \end{subfigure}
+  
+    \vspace{1em}
+   
+    \begin{subfigure}{.65\textwidth}
+      \centering
+      \begin{tikzpicture}[y=-1cm,scale=.55]
+        \mixedstylesetup
+        \begin{scope}[xshift=0cm,yshift=0cm]
+          \fill[lightgray] (0,0) rectangle (4,1);
+          \filldraw[draw=black, fill=white] (0.5,0) rectangle (1.5,1);
+          \filldraw[draw=black, fill=white] (1.5,0) rectangle (2.5,1);
+          \filldraw[draw=black, fill=white] (2.5,0) rectangle (3.5,1);
+          \node[at={(1,.5)}, ptlabel] {$c_0$};
+          \node[at={(2,.5)}, ptlabel] {$v_1$};
+          \node[at={(3,.5)}, ptlabel] {$c_4$};
+          \draw (0,0) -- (4,0);
+          \draw (0,1) -- (4,1);
+        \end{scope}
+  
+        \begin{scope}[xshift=1cm, yshift=-2cm]
+          \filldraw[v0,draw=black] (0,0) rectangle (1,1);
+          \filldraw[v1,draw=black] (1,0) rectangle (2,1);
+          \node[at={(.5,.5)}, ptlabel] {$V_0$};
+          \node[at={(1.5,.5)}, ptlabel] {$V_1$};
+        \end{scope}
+  
+        \draw (1.5,1) -- (1,2);
+        \draw (2.5,1) -- (3,2);
+  
+        \node [at={(5,.5)},anchor=center] {Points};
+        \node [at={(5,2.5)},anchor=center] {Spaces};
+      \end{tikzpicture}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{.3\textwidth}
+      \centering
+      \begin{tikzpicture}[x=.8cm,y=-1cm,scale=.7]
+        \mixedstylesetup
+        \tikzstyle{entry} = [rounded corners,draw=none];
+        \tikzstyle{blue} = [v0,entry];
+        \tikzstyle{red} = [v1,entry];
+        \draw (0,0) .. controls (-.2,0) and (-.2,3) .. (0,3);
+        \draw (1,0) .. controls (1.2,0) and (1.2,3) .. (1,3);
+        \filldraw [blue] (.1,.05) -- (.9,.05) -- (.9,.45) -- (.1,.45) -- cycle;
+        \filldraw [red] (.1,.55) -- (.9,.55) -- (.9,.95) -- (.1,.95) -- cycle;
+        \filldraw [blue] (.1,1.05) -- (.9,1.05) -- (.9,1.45) -- (.1,1.45) -- cycle;
+        \filldraw [red] (.1,1.55) -- (.9,1.55) -- (.9,1.95) -- (.1,1.95) -- cycle;
+        % \filldraw [blue] (.1,2.05) -- (.9,2.05) -- (.9,2.45) -- (.1,2.45) -- cycle;
+        % \filldraw [red] (.1,2.55) -- (.9,2.55) -- (.9,2.95) -- (.1,2.95) -- cycle;
+        % ellipsis
+        \filldraw [fill=black] (.5,2.2) circle (.5pt);
+        \filldraw [fill=black] (.5,2.5) circle (.5pt);
+        \filldraw [fill=black] (.5,2.8) circle (.5pt);
+      \end{tikzpicture}
+      \label{fig:mixedreorder_inner_vec}
+    \end{subfigure}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Summary}
+  \begin{itemize}
+    \item \pyop3 is a DSL/compiler framework for writing kernels with non-trivial access patterns
+    \item It can do everything \pyop2 can do, and more!
+    \item WIP
+  \end{itemize}
+\end{frame}
 
 \end{document}

@@ -1,0 +1,13 @@
+digraph ragged_layout {
+	"()" [label=<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'><TR><TD PORT='x0' BGCOLOR='white'>0</TD><TD PORT='x1' BGCOLOR='white'>1</TD><TD PORT='x2' BGCOLOR='white'>2</TD><TD PORT='x3' BGCOLOR='white'>3</TD><TD PORT='x4' BGCOLOR='white'>4</TD></TR></TABLE>> shape=plaintext]
+	"(0,)" [label=<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'><TR><TD PORT='x0' BGCOLOR='white'>0</TD></TR></TABLE>> shape=plaintext]
+	"()":x0 -> "(0,)" [headport=n tailport="x0:s"]
+	"(1,)" [label=<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'><TR><TD PORT='x0' BGCOLOR='white'>0</TD><TD PORT='x1' BGCOLOR='white'>1</TD></TR></TABLE>> shape=plaintext]
+	"()":x1 -> "(1,)" [headport=n tailport="x1:s"]
+	"(2,)" [label=<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'><TR><TD PORT='x0' BGCOLOR='white'>0</TD><TD PORT='x1' BGCOLOR='white'>1</TD><TD PORT='x2' BGCOLOR='white'>2</TD><TD PORT='x3' BGCOLOR='white'>3</TD></TR></TABLE>> shape=plaintext]
+	"()":x2 -> "(2,)" [headport=n tailport="x2:s"]
+	"(3,)" [label=<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'><TR><TD PORT='x0' BGCOLOR='white'>0</TD><TD PORT='x1' BGCOLOR='white'>1</TD><TD PORT='x2' BGCOLOR='white'>2</TD></TR></TABLE>> shape=plaintext]
+	"()":x3 -> "(3,)" [headport=n tailport="x3:s"]
+	"(4,)" [label=<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'><TR><TD PORT='x0' BGCOLOR='white'>0</TD><TD PORT='x1' BGCOLOR='white'>1</TD></TR></TABLE>> shape=plaintext]
+	"()":x4 -> "(4,)" [headport=n tailport="x4:s"]
+}
